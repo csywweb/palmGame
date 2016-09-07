@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	<link rel="stylesheet" type="text/css" href="bootstrap.min.css">
+	<link rel="stylesheet" type="text/css" href="bootstrap-theme.css">
+	<script type="text/javascript" src="jquery.js"></script>
+	<style type="text/css">
+		body{
+			padding-top: 70px;
+    		padding-bottom: 30px;
+		}
+	</style>
+</head>
+<body>
+	 <!-- Fixed navbar -->
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      	<div class="container">
+	        <div class="navbar-header">
+	          <a class="navbar-brand" href="#">手心手背博弈游戏</a>
+	        </div>
+      	</div>
+    </nav>
+    <div class="container theme-showcase">
+    	 <div class="jumbotron">
+	        <h1>游戏规则</h1>
+	        <p>A和B玩手心手背，如果同时手心向上，A给B,3块钱，如果同时手背向上，A给B,1块钱，如果AB出的不一样， B给A2块钱，你觉得游戏公平吗？</p>
+     	</div>
+     	<div class="form-group">
+		    <label class="sr-only">比赛次数</label>
+		    <p class="form-control-static">比赛次数</p>
+		</div>
+		<div class="form-group">
+			<label for="inputPassword2" class="sr-only">比赛次数</label>
+			<input type="text" class="form-control" id="count" placeholder="比赛次数">
+		</div>
+		<button type="submit" class="btn btn-default js-confirm">确定</button>
+		<div class="result">
+			<table class="table">
+				<caption>游戏结果: <p>A的获胜次数:<span id="countA"></span></p>
+								<p>B的获胜次数:<span id="countB"></span></p>
+				</caption>
+			  	<thead>
+			        <tr>
+			          <th>#</th>
+			          <th>A</th>
+			          <th>B</th>
+			          <th>A的钱</th>
+			          <th>B的钱</th>
+			          <th>本次胜利者</th>
+			        </tr>
+		      	</thead>
+		      	<tbody id="result">
+		      		
+		      	</tbody>
+			</table>
+		</div>
+    </div>
+<script type="text/javascript">
+    function FingerGame(){
+    	this.scoreA = 0;
+    	this.scoreB = 0;
+    	this.winner = "";
+    	this.countA = 0;
+    	this.countB = 0;
+    	this.config = {
+    		"1" : "手背",
+    		"0" : "手心"
+    	}
+    	this.init();
+    }
+    FingerGame.prototype = {
+    	init : function(){
+    		var that = this;
+    		$(".js-confirm").click(function(){
+    			var val = document.getElementById("count").value;
+				that.count = val;
+				that.clean();
+				that.gameStart();
+    		})
+    	},
+    	game : function(){
+    		//游戏规则： 0为手心，1为手背
+    		return Math.round(Math.random());
+    	},
+    	gameStart : function(){
+    		
+    		var count = this.count;
+    		for(var i = 0; i < count; i++){
+    			var a = this.game(),
+    				b = this.game();
+    			//同为手心
+    			if(a == 0 && a == b ){
+    				this.scoreA -= 3;
+    				this.scoreB += 3;
+    				this.winner = "B";
+    				this.countB += 1;
+    				//console.log("同为手心")
+    			}
+    			//同为手背
+    			if(a == 1 && a == b){
+    				this.scoreA -= 1;
+    				this.scoreB += 1;
+    				this.winner = "B";
+    				this.countB += 1;
+    				//console.log("同为手背")
+    			}
+    			//两个不一样
+    			if( a != b){
+    				this.scoreA += 2; 
+    				this.scoreB -= 2;
+    				this.winner = "A";
+    				this.countA += 1;
+    				//console.log("两个不一样")
+    			}
+    			this.result(a, b, i);
+    		}
+            this.complete();
+    	},
+    	result : function(a, b, cur){
+    		var that = this;
+    		var config = that.config;
+    		
+    		var html = '<tr>' +
+				          '<td>'+ cur +'</td>' +
+				          '<td>'+ config[a] +'</td>' +
+				          '<td>'+ config[b] +'</td>' +
+				          '<td>'+ that.scoreA +'</td>' +
+				          '<td>'+ that.scoreB +'</td>' +
+				          '<td>'+ that.winner +'</td>' +
+				        '</tr>';
+    		$("#result").append(html);
+    	},
+    	clean : function(){
+    		$("#result").empty();
+    		this.scoreA = 0;
+	    	this.scoreB = 0;
+	    	this.winner = "";
+	    	this.countA = 0;
+	    	this.countB = 0;
+    	},
+        complete : function(){
+            $("#countA").text(this.countA);
+            $("#countB").text(this.countB);
+        }
+    }
+	
+	new FingerGame();	
+</script>
+</body>
+</html>
