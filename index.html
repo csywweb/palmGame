@@ -5,12 +5,19 @@
 	<title>Document</title>
 	<link rel="stylesheet" type="text/css" href="bootstrap.min.css">
 	<link rel="stylesheet" type="text/css" href="bootstrap-theme.css">
-	<script type="text/javascript" src="jquery.js"></script>
+	<script type="text/javascript" src="vue.js"></script>
 	<style type="text/css">
 		body{
 			padding-top: 70px;
     		padding-bottom: 30px;
 		}
+        .bar{
+            overflow: hidden;
+            width:100%;
+        }
+        .bar p{float:right;margin-right:30px;}
+        .bar div{float: right;}
+        .bar .btn-group{margin-right: 30px;}
 	</style>
 </head>
 <body>
@@ -22,7 +29,7 @@
 	        </div>
       	</div>
     </nav>
-    <div class="container theme-showcase">
+    <div class="container theme-showcase"  id="app">
     	 <div class="jumbotron">
 	        <h1>游戏规则</h1>
 	        <p>A和B玩手心手背，如果同时手心向上，A给B,3块钱，如果同时手背向上，A给B,1块钱，如果AB出的不一样， B给A2块钱，你觉得游戏公平吗？</p>
@@ -52,18 +59,47 @@
 			        </tr>
 		      	</thead>
 		      	<tbody id="result">
-		      		
+		      		<template v-for="item in items">
+                        <tr>
+                            <td >{{item.index}}</td>
+                            <td >{{item.curA}}</td>
+                            <td >{{item.curB}}</td>
+                            <td >{{item.scoreA}}</td>
+                            <td >{{item.scoreB}}</td>
+                            <td >{{item.winner}}</td>
+                        </tr>
+                    </template>
 		      	</tbody>
 			</table>
+            <div class="bar" v-if="show">
+                <div>
+                    跳至
+                    <select name="" id="">
+                        <option>1</option>    
+                        <option>2</option>    
+                        <option>3</option>    
+                    </select>
+                    页
+                </div>
+                <div class="btn-group">
+                    <a href="javascript:;">上一页</a>
+                    <a href="javascript:;">下一页</a>
+                </div>
+                <p>当前第<span>1</span>页,共<span>20</span>页</p>
+            </div>
 		</div>
     </div>
 <script type="text/javascript">
+    var FinalResult = [];
     function FingerGame(){
     	this.scoreA = 0;
     	this.scoreB = 0;
     	this.winner = "";
     	this.countA = 0;
     	this.countB = 0;
+        this.arr    = [];           //所有数据
+        this.arr_   = [];           //临时数组 分页数据
+        this.page   = 20;           //分页
     	this.config = {
     		"1" : "手背",
     		"0" : "手心"
@@ -73,12 +109,13 @@
     FingerGame.prototype = {
     	init : function(){
     		var that = this;
-    		$(".js-confirm").click(function(){
+            var btn  = document.querySelector(".js-confirm");
+            btn.onclick = function(){
     			var val = document.getElementById("count").value;
 				that.count = val;
 				that.clean();
 				that.gameStart();
-    		})
+    		}
     	},
     	game : function(){
     		//游戏规则： 0为手心，1为手背
@@ -130,10 +167,24 @@
 				          '<td>'+ that.scoreB +'</td>' +
 				          '<td>'+ that.winner +'</td>' +
 				        '</tr>';
-    		$("#result").append(html);
+    		var data = {};
+            data.index = cur;
+            data.curA  = config[a];
+            data.curB  = config[b];
+            data.scoreA = that.scoreA;
+            data.scoreB = that.scoreB;
+            data.winner = that.winner;
+
+            that.arr_.push(data);
+           // console.log(cur % that.page == 0 && cur != 0)
+           /* if(cur % that.page == 0 && cur != 0){
+                console.log(that.arr_);
+                that.arr.push(that.arr_);
+                that.arr_ = [];
+            }*/
     	},
-    	clean : function(){
-    		$("#result").empty();
+    	clean : function(){ 
+    		document.getElementById("result").innerHtml = "";
     		this.scoreA = 0;
 	    	this.scoreB = 0;
 	    	this.winner = "";
@@ -141,12 +192,37 @@
 	    	this.countB = 0;
     	},
         complete : function(){
-            $("#countA").text(this.countA);
-            $("#countB").text(this.countB);
+            var that = this;
+            document.getElementById("countA").innerText = this.countA;
+            document.getElementById("countB").innerText = this.countB;
+
+            FinalResult = array_chunk(that.arr_, that.page);
+            
+            tbody.$set("items", FinalResult[0])
+            tbody.$set("show",true);
         }
     }
 	
-	new FingerGame();	
+	var obj = new FingerGame();	
+   
+    var tbody = new Vue({
+        el : "#app",
+        data : {
+            show : false,
+            items : []
+        }
+
+    })
+
+    function array_chunk(array, size) {
+        var result = [];
+        for (var x = 0; x < Math.ceil(array.length / size); x++) {
+            var start = x * size;
+            var end = start + size;
+            result.push(array.slice(start, end));
+        }
+        return result;
+    }
 </script>
 </body>
 </html>
