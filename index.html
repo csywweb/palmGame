@@ -75,9 +75,7 @@
                 <div>
                     跳至
                     <select name="" id="" v-model="select" v-on:change="selPage">
-                        <option selected>1</option>    
-                        <option>2</option>    
-                        <option>3</option>    
+                        <option v-for="item in result">{{$index + 1}}</option>    
                     </select>
                     页
                 </div>
@@ -176,12 +174,7 @@
             data.winner = that.winner;
 
             that.arr_.push(data);
-           // console.log(cur % that.page == 0 && cur != 0)
-           /* if(cur % that.page == 0 && cur != 0){
-                console.log(that.arr_);
-                that.arr.push(that.arr_);
-                that.arr_ = [];
-            }*/
+           
     	},
     	clean : function(){ 
     		document.getElementById("result").innerHtml = "";
@@ -190,6 +183,7 @@
 	    	this.winner = "";
 	    	this.countA = 0;
 	    	this.countB = 0;
+            this.arr_   = [];
     	},
         complete : function(){
             var that = this;
@@ -201,13 +195,14 @@
             tbody.$set("items", FinalResult[0])
             tbody.$set("nowPage",1);
             tbody.$set("totalPage", total);
-            tbody.$set("show", true);
             tbody.$set("result", FinalResult);
+            tbody.$set("show", true);
         }
     }
 	
 	var obj = new FingerGame();	
    
+    var tag = "", next = "", length = "", final = [];
     var tbody = new Vue({
         el : "#app",
         data : {
@@ -215,20 +210,43 @@
             items : [],
             nowPage : 0,
             totalPage : 0,
-
+            result : null,
+            select : 1,
         },
         methods :{
             prev : function(){
-                
+                tag = this.nowPage;
+                arr = this.result;
+                length = arr.length;
+                if(tag - 1 == 0){
+                    alert("已经到了第一页");
+                    return;
+                }
+                var tmp = tag - 1;
+                this.switchEnd(tmp);
             },
             next : function(){
-
+                tag = this.nowPage;
+                arr = this.result;
+                length = arr.length;
+                if(tag == length){
+                    alert("已经到了最后一页");
+                    return;
+                }
+                var tmp = tag + 1;
+                this.switchEnd(tmp);
             },
             selPage : function(){
                 var page = this.select;
+                this.switchEnd(page);
+            },
+            switchEnd : function(index){
+                //参数index为目标页数下标 从1开始
+                this.nowPage = index;
+                this.select = index;
+                this.items = this.result[index-1];
             }
         }
-
     })
 
     function array_chunk(array, size) {
@@ -241,5 +259,5 @@
         return result;
     }
 </script>
-</body>
+</body> 
 </html>
